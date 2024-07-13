@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "clients",
+    "slug": "clients",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

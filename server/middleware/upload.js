@@ -11,10 +11,10 @@ if (!fs.existsSync(uploadsDir)) {
 // Multer storage configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, uploadsDir); // Use the ensured uploads directory
+    cb(null, uploadsDir); 
   },
   filename: function (req, file, cb) {
-    cb(null, new Date().toISOString().replace(/:/g, '-') + '-' + file.originalname); // Unique file name generation
+    cb(null, new Date().toISOString().replace(/:/g, '-') + '-' + file.originalname); 
   }
 });
 
