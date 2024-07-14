@@ -4,7 +4,14 @@ import { View, Text, Button, StyleSheet } from "react-native";
 import TaskScreen from "./TaskScreen";
 
 const HomeScreen = ({ navigation }) => {
-  return <TaskScreen navigation={navigation} />;
+  return (
+    <View style={styles.container}>
+      <Button
+        title="View Tasks"
+        onPress={() => navigation.navigate("TaskScreen")}
+      />
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({

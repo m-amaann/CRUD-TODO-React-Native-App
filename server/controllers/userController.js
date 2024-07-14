@@ -47,6 +47,8 @@ exports.register = async (req, res) => {
   }
 };
 
+
+
 // User Login
 exports.login = async (req, res) => {
   const { email, password } = req.body;
@@ -58,13 +60,26 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
-    res.status(200).json({ message: "Logged in successfully",  token });
+    const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '90d' }); // token expires in 90 days
+    res.status(200).json({ message: "Logged in successfully", token });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
+
+// User Logout
+exports.logout = async (req, res) => {
+  try {
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 
 // Get User Profile
 exports.profile = async (req, res) => {

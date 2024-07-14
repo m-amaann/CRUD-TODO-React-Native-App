@@ -1,13 +1,7 @@
-// screens/LoginScreen.js
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Button, TouchableOpacity, Alert } from 'react-native';
-import { styled } from 'nativewind';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Ensure AsyncStorage is installed
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTextInput = styled(TextInput);
-const StyledTouchableOpacity = styled(TouchableOpacity);
+import { View, Text, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import InputField from '../components/common/InputFields';
 
 const validateEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -21,60 +15,49 @@ const validatePassword = (password) => {
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  useEffect(() => {
-    checkIfLoggedIn(); 
-  }, []);
-
-
-
-  // Check if user is already logged in
-  const checkIfLoggedIn = async () => {
-    try {
-      const userToken = await AsyncStorage.getItem('userToken');
-      if (userToken) {
-        // User is already logged in, navigate to Home screen
-        navigation.replace('Home');
-      }
-    } catch (error) {
-      console.error('Failed to fetch user token from AsyncStorage:', error);
-    }
-  };
+  const [isLoading, setIsLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   const handleLogin = async () => {
+    // Reset errors
+    setEmailError('');
+    setPasswordError('');
+
     // Check if both email and password fields are empty
     if (email.trim() === '' && password.trim() === '') {
-      Alert.alert('Error', 'Both inputs are empty, please fill them');
+      setEmailError('Email input is empty, please fill it');
+      setPasswordError('Password input is empty, please fill it');
       return;
     }
 
+    // Check if email fields are empty
     if (email.trim() === '') {
-      Alert.alert('Error', 'Email input is empty, please fill it');
+      setEmailError('Email input is empty, please fill it');
       return;
     }
 
+    // Check if password fields are empty
     if (password.trim() === '') {
-      Alert.alert('Error', 'Password input is empty, please fill it');
+      setPasswordError('Password input is empty, please fill it');
       return;
     }
 
     // Validate email and password
     if (!validateEmail(email)) {
-      Alert.alert('Error', 'Please enter a valid email address.');
+      setEmailError('Please enter a valid email address.');
       return;
     }
 
     if (!validatePassword(password)) {
-      Alert.alert('Error', 'Please enter a valid password.');
+      setPasswordError('Please enter a valid password.');
       return;
     }
 
-    const user = {
-      email,
-      password,
-    };
+    const user = { email, password };
 
     try {
+      setIsLoading(true);
       const response = await fetch('http://192.168.8.159:5000/api/user/login', {
         method: 'POST',
         headers: {
@@ -86,8 +69,7 @@ const LoginScreen = ({ navigation }) => {
       const data = await response.json();
 
       if (response.ok) {
-        // Save user token to AsyncStorage
-        await AsyncStorage.setItem('userToken', data.token);
+        await AsyncStorage.setItem('userToken', data.token);  // Save user token to AsyncStorage
         // Handle successful login
         navigation.replace('Home');
       } else {
@@ -97,35 +79,53 @@ const LoginScreen = ({ navigation }) => {
     } catch (error) {
       // Handle fetch error
       Alert.alert('Error', 'Failed to connect to the server. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <StyledView className="flex-1 justify-center px-5 bg-blue-200">
-      <StyledText className="text-2xl mb-5 text-center text-white">Login</StyledText>
-
-      <StyledTextInput
-        className="h-10 border border-gray-300 mb-3 px-3 text-white"
-        placeholder="Email"
-        placeholderTextColor="gray"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <StyledTextInput
-        className="h-10 border border-gray-300 mb-3 px-3 text-white"
-        placeholder="Password"
-        placeholderTextColor="gray"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <Button className="mb-3" title="Login" onPress={handleLogin} />
-      <StyledTouchableOpacity onPress={() => navigation.navigate('Register')}>
-        <StyledText className="text-blue-500 mt-4 text-center">Don't have an account? Register</StyledText>
-      </StyledTouchableOpacity>
-    </StyledView>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white', paddingHorizontal: 20 }}>
+      <View style={{ marginTop: 20 }}>
+        <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#374151' }}>Sign In</Text>
+      </View>
+      <View style={{ marginTop: 10, marginBottom: 20, alignItems: 'center' }}>
+        <Text style={{ fontSize: 13, color: '#6B7280' }} className="leading-">You can sign-in into account and enjoy task management with application.</Text>
+      </View>
+      <View style={{ width: '100%', marginBottom: 20, paddingTop: 20 }}>
+        {emailError ? (
+          <Text style={{ color: '#EF4444', fontSize: 13, marginBottom: 10 }}>{emailError}</Text>
+        ) : null}
+        <InputField
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          error={emailError}
+        />
+        {passwordError ? (
+          <Text style={{ color: '#EF4444', fontSize: 13, marginBottom: 10 }}>{passwordError}</Text>
+        ) : null}
+        <InputField
+          label="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          error={passwordError}
+        />
+      </View>
+      <TouchableOpacity
+        style={{ width: '100%', backgroundColor: '#0F8275', paddingVertical: 11, borderRadius: 12, alignItems: 'center', position: 'absolute', bottom: 50 }}
+        onPress={handleLogin}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: 'white' }}>Login</Text>
+        )}
+      </TouchableOpacity>
+    </View>
   );
 };
 

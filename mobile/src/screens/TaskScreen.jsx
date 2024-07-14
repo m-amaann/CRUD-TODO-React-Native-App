@@ -6,13 +6,6 @@ import axios from 'axios';
 const TaskScreen = ({ navigation }) => {
   const [tasks, setTasks] = useState([]);
 
-  useEffect(() => {
-    // Fetch tasks from API
-    axios.get('https://api.example.com/tasks')
-      .then(response => setTasks(response.data))
-      .catch(error => console.error(error));
-  }, []);
-
   const renderTask = ({ item }) => (
     <TouchableOpacity style={styles.taskItem} onPress={() => navigation.navigate('EditTask', { task: item })}>
       <Text>{item.title}</Text>
