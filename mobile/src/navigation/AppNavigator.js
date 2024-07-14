@@ -1,10 +1,10 @@
-// // navigation/AppNavigator.js
-// import React from 'react';
+// import React, { useEffect, useState } from 'react';
 // import { NavigationContainer } from '@react-navigation/native';
 // import { createStackNavigator } from '@react-navigation/stack';
-// import { TouchableOpacity, View, StyleSheet } from 'react-native';
-// import PlatformSpecificIcon from '../components/headers/PlatformSpecificIcon';
+// import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from 'react-native';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// // Screens
 // import LoginScreen from '../screens/LoginScreen';
 // import RegisterScreen from '../screens/RegisterScreen';
 // import MainTabNavigator from './MainTabNavigator';
@@ -12,45 +12,52 @@
 // import EditTaskScreen from '../screens/EditTaskScreen';
 // import EditProfileScreen from '../screens/EditProfileScreen';
 // import WelcomeScreen from '../screens/WelcomeScreen';
-
-// import AsyncStorage from '@react-native-async-storage/async-storage';
-
+// import PlatformSpecificIcon from '../components/headers/PlatformSpecificIcon';
 
 // const Stack = createStackNavigator();
 
 // const AppNavigator = () => {
-
 //   const [initializing, setInitializing] = useState(true);
-//   const [userToken, setUserToken] = useState(null);
+//   const [isLoggedIn, setIsLoggedIn] = useState(false);
+//   const [showWelcomeScreen, setShowWelcomeScreen] = useState(false);
 
+//   // Function to check if the user is logged in based on token presence
+//   const checkUserLoggedIn = async () => {
+//     let token = null;
+//     try {
+//       token = await AsyncStorage.getItem('userToken');
+//     } catch (error) {
+//       console.error('Error retrieving user token from AsyncStorage:', error);
+//     }
+
+//     if (token) {
+//       setIsLoggedIn(true); // User is considered logged in if token exists
+//       setShowWelcomeScreen(false); // No need to show Welcome Screen for returning user
+//     } else {
+//       setIsLoggedIn(false); // No token found, user is not logged in
+//       setShowWelcomeScreen(true); // Show Welcome Screen for new user
+//     }
+
+//     setInitializing(false); // Initialization complete
+//   };
 
 //   useEffect(() => {
-//     const bootstrapAsync = async () => {
-//       let token = null;
-//       try {
-//         token = await AsyncStorage.getItem('userToken');
-//       } catch (e) {
-//         console.error('Error retrieving user token from AsyncStorage:', e);
-//       }
-//       setUserToken(token);
-//       setInitializing(false);
-//     };
-
-//     bootstrapAsync();
+//     checkUserLoggedIn(); // Check login status on component mount
 //   }, []);
 
 //   if (initializing) {
-//     return null; // Render loading component if initializing
+//     // Show loading indicator while initializing
+//     return (
+//       <View style={styles.loadingContainer}>
+//         <ActivityIndicator size="large" color="#0F8275" />
+//       </View>
+//     );
 //   }
 
 //   return (
 //     <NavigationContainer>
-//       <Stack.Navigator initialRouteName={userToken ? 'Home' : 'Welcome'}>
-//         <Stack.Screen
-//           name="Welcome"
-//           component={WelcomeScreen}
-//           options={{ headerShown: false }}
-//         />
+//       <Stack.Navigator initialRouteName={showWelcomeScreen ? 'WelcomeScreen' : (isLoggedIn ? 'MainTabNavigator' : 'Login')}>
+//         <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} options={{ headerShown: false }} />
 //         <Stack.Screen
 //           name="Login"
 //           component={LoginScreen}
@@ -58,7 +65,7 @@
 //             headerLeft: () => (
 //               <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButtonContainer}>
 //                 <View style={styles.backButton}>
-//                   <PlatformSpecificIcon iosName="arrow-back" mdName="arrow-back-outline" size={24} color="white" />
+//                   <PlatformSpecificIcon iosName="chevron-back" mdName="arrow-back-outline" size={22} color="white" />
 //                 </View>
 //               </TouchableOpacity>
 //             ),
@@ -81,66 +88,40 @@
 //             headerTitle: '',
 //           })}
 //         />
-//         <Stack.Screen
-//           name="Home"
-//           component={MainTabNavigator}
-//           options={{ headerShown: false }}
-//         />
-//         <Stack.Screen
-//           name="AddTask"
-//           component={AddTaskScreen}
-//           options={{ headerShown: false }}
-//         />
-//         <Stack.Screen
-//           name="EditTask"
-//           component={EditTaskScreen}
-//           options={{ headerShown: false }}
-//         />
-//         <Stack.Screen
-//           name="EditProfile"
-//           component={EditProfileScreen}
-//           options={{ headerShown: false }}
-//         />
+//         <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} options={{ headerShown: false }} />
+//         <Stack.Screen name="AddTaskScreen" component={AddTaskScreen} options={{ headerShown: false }} />
+//         <Stack.Screen name="EditTaskScreen" component={EditTaskScreen} options={{ headerShown: false }} />
+//         <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} options={{ headerShown: false }} />
 //       </Stack.Navigator>
 //     </NavigationContainer>
 //   );
 // };
 
 // const styles = StyleSheet.create({
-//   headerStyle: {
-//     backgroundColor: '#fff',
-//     borderBottomLeftRadius: 20, 
-//     borderBottomRightRadius: 20, 
-//     shadowColor: '#000',
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowOpacity: 0.10,
-//     shadowRadius: 3.5,
-//     elevation: 5,
-//   },
-//   backButtonContainer: {
-//     paddingHorizontal: 10,
-//     paddingBottom: 7,
-//   },
-//   backButton: {
-//     backgroundColor: '#128E80',
-//     borderTopRightRadius: 20,
-//     borderBottomLeftRadius: 20, 
-//     paddingHorizontal: 10, 
-//     paddingVertical: 5,
+//   loadingContainer: {
+//     flex: 1,
 //     justifyContent: 'center',
 //     alignItems: 'center',
+//   },
+//   backButtonContainer: {
+//     marginLeft: 15,
+//   },
+//   backButton: {
+//     paddingHorizontal: 10,
+//   },
+//   headerStyle: {
+//     backgroundColor: '#0F8275',
 //   },
 // });
 
 // export default AppNavigator;
 
 
+
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { TouchableOpacity, View, StyleSheet } from 'react-native';
-import PlatformSpecificIcon from '../components/headers/PlatformSpecificIcon';
-import jwt_decode from 'jwt-decode';
+import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Screens
@@ -151,55 +132,52 @@ import AddTaskScreen from '../screens/AddTaskScreen';
 import EditTaskScreen from '../screens/EditTaskScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import WelcomeScreen from '../screens/WelcomeScreen';
+import PlatformSpecificIcon from '../components/headers/PlatformSpecificIcon';
 
 const Stack = createStackNavigator();
 
 const AppNavigator = () => {
   const [initializing, setInitializing] = useState(true);
-  const [userToken, setUserToken] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showWelcomeScreen, setShowWelcomeScreen] = useState(false);
 
+  // Function to check if the user is logged in based on token presence
   const checkUserLoggedIn = async () => {
     let token = null;
     try {
       token = await AsyncStorage.getItem('userToken');
-    } catch (e) {
-      console.error('Error retrieving user token from AsyncStorage:', e);
+    } catch (error) {
+      console.error('Error retrieving user token from AsyncStorage:', error);
     }
 
     if (token) {
-      try {
-        const decodedToken = jwt_decode(token);
-        const expiryDate = new Date(decodedToken.exp * 1000);
-        const currentDate = new Date();
-
-        if (currentDate < expiryDate) {
-          setUserToken(token);
-        } else {
-          await AsyncStorage.removeItem('userToken');
-          setUserToken(null);
-        }
-      } catch (error) {
-        console.error('Error decoding token:', error);
-        await AsyncStorage.removeItem('userToken');
-        setUserToken(null);
-      }
+      setIsLoggedIn(true); // User is considered logged in if token exists
+      setShowWelcomeScreen(false); // No need to show Welcome Screen for returning user
+    } else {
+      setIsLoggedIn(false); // No token found, user is not logged in
+      setShowWelcomeScreen(true); // Show Welcome Screen for new user
     }
 
-    setInitializing(false);
+    setInitializing(false); // Initialization complete
   };
 
   useEffect(() => {
-    checkUserLoggedIn();
+    checkUserLoggedIn(); // Check login status on component mount
   }, []);
 
   if (initializing) {
-    return null; // Render loading component if initializing
+    // Show loading indicator while initializing
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0F8275" />
+      </View>
+    );
   }
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={userToken ? 'Home' : 'Welcome'}>
-        <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
+      <Stack.Navigator initialRouteName={showWelcomeScreen ? 'WelcomeScreen' : (isLoggedIn ? 'MainTabNavigator' : 'Login')}>
+        <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} options={{ headerShown: false }} />
         <Stack.Screen
           name="Login"
           component={LoginScreen}
@@ -207,7 +185,7 @@ const AppNavigator = () => {
             headerLeft: () => (
               <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButtonContainer}>
                 <View style={styles.backButton}>
-                  <PlatformSpecificIcon iosName="arrow-back" mdName="arrow-back-outline" size={24} color="white" />
+                  <PlatformSpecificIcon iosName="chevron-back" mdName="arrow-back-outline" size={22} color="white" />
                 </View>
               </TouchableOpacity>
             ),
@@ -230,38 +208,29 @@ const AppNavigator = () => {
             headerTitle: '',
           })}
         />
-        <Stack.Screen name="Home" component={MainTabNavigator} options={{ headerShown: false }} />
-        <Stack.Screen name="AddTask" component={AddTaskScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="EditTask" component={EditTaskScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="MainTabNavigator" component={MainTabNavigator} options={{ headerShown: false }} />
+        <Stack.Screen name="AddTaskScreen" component={AddTaskScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="EditTaskScreen" component={EditTaskScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 };
 
 const styles = StyleSheet.create({
-  headerStyle: {
-    backgroundColor: '#fff',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.5,
-    elevation: 5,
-  },
-  backButtonContainer: {
-    paddingHorizontal: 10,
-    paddingBottom: 7,
-  },
-  backButton: {
-    backgroundColor: '#128E80',
-    borderTopRightRadius: 20,
-    borderBottomLeftRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+  loadingContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  backButtonContainer: {
+    marginLeft: 15,
+  },
+  backButton: {
+    paddingHorizontal: 10,
+  },
+  headerStyle: {
+    backgroundColor: '#0F8275',
   },
 });
 

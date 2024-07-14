@@ -5,7 +5,7 @@ const fs = require('fs');
 
 // User Registration
 exports.register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, phone, password } = req.body;
   let profileImage = null;
 
   // Check if file was uploaded

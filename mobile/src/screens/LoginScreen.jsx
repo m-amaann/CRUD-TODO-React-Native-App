@@ -1,15 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import InputField from '../components/common/InputFields';
 
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
+
 const validateEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email); // Validate email format
+  return emailRegex.test(email);
 };
 
 const validatePassword = (password) => {
-  return password.length >= 6; // Password must be at least 6 characters long
+  return password.length >= 6;
 };
 
 const LoginScreen = ({ navigation }) => {
@@ -20,30 +23,25 @@ const LoginScreen = ({ navigation }) => {
   const [passwordError, setPasswordError] = useState('');
 
   const handleLogin = async () => {
-    // Reset errors
     setEmailError('');
     setPasswordError('');
 
-    // Check if both email and password fields are empty
     if (email.trim() === '' && password.trim() === '') {
-      setEmailError('Email input is empty, please fill it');
-      setPasswordError('Password input is empty, please fill it');
+      setEmailError('Email input is empty');
+      setPasswordError('Password input is empty');
       return;
     }
 
-    // Check if email fields are empty
     if (email.trim() === '') {
       setEmailError('Email input is empty, please fill it');
       return;
     }
 
-    // Check if password fields are empty
     if (password.trim() === '') {
       setPasswordError('Password input is empty, please fill it');
       return;
     }
 
-    // Validate email and password
     if (!validateEmail(email)) {
       setEmailError('Please enter a valid email address.');
       return;
@@ -69,15 +67,12 @@ const LoginScreen = ({ navigation }) => {
       const data = await response.json();
 
       if (response.ok) {
-        await AsyncStorage.setItem('userToken', data.token);  // Save user token to AsyncStorage
-        // Handle successful login
-        navigation.replace('Home');
+        await AsyncStorage.setItem('userToken', data.token);
+        navigation.replace('MainTabNavigator');
       } else {
-        // Handle login error
         Alert.alert('Error', data.message || 'An error occurred. Please try again.');
       }
     } catch (error) {
-      // Handle fetch error
       Alert.alert('Error', 'Failed to connect to the server. Please try again.');
     } finally {
       setIsLoading(false);
@@ -85,16 +80,20 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white', paddingHorizontal: 20 }}>
-      <View style={{ marginTop: 20 }}>
-        <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#374151' }}>Sign In</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white', paddingHorizontal: 20 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      enabled
+    >
+      <View style={{ marginTop: windowHeight * 0.05 }}>
+        <Text style={{ fontSize: windowWidth * 0.07, fontWeight: 'bold', color: '#374151' }}>Sign In</Text>
       </View>
-      <View style={{ marginTop: 10, marginBottom: 20, alignItems: 'center' }}>
-        <Text style={{ fontSize: 13, color: '#6B7280' }} className="leading-">You can sign-in into account and enjoy task management with application.</Text>
+      <View style={{ marginTop: windowHeight * 0.02, marginBottom: windowHeight * 0.05, alignItems: 'center' }}>
+        <Text style={{ fontSize: windowWidth * 0.035, color: '#6B7280' }}>You can sign-in into account and enjoy task management with application.</Text>
       </View>
-      <View style={{ width: '100%', marginBottom: 20, paddingTop: 20 }}>
+      <View style={{ width: '100%', marginBottom: windowHeight * 0.05, paddingTop: windowHeight * 0.02 }}>
         {emailError ? (
-          <Text style={{ color: '#EF4444', fontSize: 13, marginBottom: 10 }}>{emailError}</Text>
+          <Text style={{ color: '#EF4444', fontSize: windowWidth * 0.035, marginBottom: windowHeight * 0.02 }}>{emailError}</Text>
         ) : null}
         <InputField
           label="Email"
@@ -104,7 +103,7 @@ const LoginScreen = ({ navigation }) => {
           error={emailError}
         />
         {passwordError ? (
-          <Text style={{ color: '#EF4444', fontSize: 13, marginBottom: 10 }}>{passwordError}</Text>
+          <Text style={{ color: '#EF4444', fontSize: windowWidth * 0.035, marginBottom: windowHeight * 0.02 }}>{passwordError}</Text>
         ) : null}
         <InputField
           label="Password"
@@ -115,17 +114,17 @@ const LoginScreen = ({ navigation }) => {
         />
       </View>
       <TouchableOpacity
-        style={{ width: '100%', backgroundColor: '#0F8275', paddingVertical: 11, borderRadius: 12, alignItems: 'center', position: 'absolute', bottom: 50 }}
+        style={{ width: '100%', backgroundColor: '#0F8275', paddingVertical: windowHeight * 0.015, borderRadius: windowWidth * 0.03, alignItems: 'center', position: 'absolute', bottom: windowHeight * 0.1 }}
         onPress={handleLogin}
         disabled={isLoading}
       >
         {isLoading ? (
           <ActivityIndicator color="white" />
         ) : (
-          <Text style={{ fontSize: 18, fontWeight: 'bold', color: 'white' }}>Login</Text>
+          <Text style={{ fontSize: windowWidth * 0.045, fontWeight: 'bold', color: 'white' }}>Login</Text>
         )}
       </TouchableOpacity>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
